@@ -25,6 +25,12 @@ def sync_files(source_items, source):
     for (dir_path, dir_names, file_names) in os.walk(replica):
         for file in file_names:
             replica_items.append(os.path.relpath(os.path.join(dir_path, file), replica))
+    copy_new_files(source_items,replica_items,replica,source)
+    remove_files(source_items, replica_items, replica, source)
+    logging.info("Source folder synchronization completed")
+
+
+def copy_new_files(source_items, replica_items, replica, source):
     for item in source_items:
         if os.path.relpath(item[0], source) not in replica_items:
             replica_dst_dir = os.path.join(replica, os.path.relpath(os.path.dirname(item[0]), source))
@@ -42,13 +48,13 @@ def sync_files(source_items, source):
                 except FileExistsError:
                     pass
                 shutil.copy2(item[0], replica_dst_dir)
+
+def remove_files(source_items, replica_items, replica, source):
     current_items = [os.path.relpath(_item[0], source) for _item in source_items]
     for file in replica_items:
         if file not in current_items:
             os.remove(os.path.join(replica, file))
             logging.info(f"'{file}' removed from replica folder.")
-    logging.info("Source folder synchronization completed")
-
 
 def sync_period():
     try:
