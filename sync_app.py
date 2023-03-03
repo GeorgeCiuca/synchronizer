@@ -25,8 +25,9 @@ def sync_files(source_items, source):
     for (dir_path, dir_names, file_names) in os.walk(replica):
         for file in file_names:
             replica_items.append(os.path.relpath(os.path.join(dir_path, file), replica))
-    copy_new_files(source_items,replica_items,replica,source)
+    copy_new_files(source_items, replica_items, replica, source)
     remove_files(source_items, replica_items, replica, source)
+    manage_subfolders(source_items, replica_items, replica, source)
     logging.info("Source folder synchronization completed")
 
 
@@ -49,12 +50,41 @@ def copy_new_files(source_items, replica_items, replica, source):
                     pass
                 shutil.copy2(item[0], replica_dst_dir)
 
+
 def remove_files(source_items, replica_items, replica, source):
     current_items = [os.path.relpath(_item[0], source) for _item in source_items]
     for file in replica_items:
         if file not in current_items:
             os.remove(os.path.join(replica, file))
             logging.info(f"'{file}' removed from replica folder.")
+
+
+def manage_subfolders(source_items, replica_items, replica, source):
+    replica_directories = []
+    source_directories = []
+    replica_directories = [os.path.relpath(x[0], replica) for x in os.walk(replica)]
+    source_directories = [os.path.relpath(x[0], source) for x in os.walk(source)]
+    for dir in source_directories:
+        if dir not in replica_directories:
+            os.makedirs(os.path.join(replica, dir))
+            logging.info(f"'{dir}' subfolder created in replica folder.")
+    for dir in replica_directories:
+        if dir not in source_directories:
+            os.removedirs(os.path.join(replica, dir))
+            logging.info(f"'{dir}' subfolder removed from replica folder.")
+    # for file in replica_items:
+    #     directory_name = os.path.relpath(os.path.dirname(os.path.join(replica, file)), replica)
+    #     if os.path.dirname(os.path.join(replica, file)) != replica and directory_name not in replica_directories:
+    #         replica_directories.append(directory_name)
+    # for file in source_items:
+    #     directory_name = os.path.relpath(os.path.dirname(file[0]), source)
+    #     if os.path.dirname(file[0]) != source and directory_name not in source_directories:
+    #         print(directory_name)
+    #         if directory_name not in replica_directories:
+    #             os.makedirs(os.path.join(replica, directory_name))
+    #             source_directories.append(directory_name)
+
+
 
 def sync_period():
     try:
