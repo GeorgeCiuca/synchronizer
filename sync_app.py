@@ -72,17 +72,6 @@ def manage_subfolders(source_items, replica_items, replica, source):
         if dir not in source_directories:
             os.removedirs(os.path.join(replica, dir))
             logging.info(f"'{dir}' subfolder removed from replica folder.")
-    # for file in replica_items:
-    #     directory_name = os.path.relpath(os.path.dirname(os.path.join(replica, file)), replica)
-    #     if os.path.dirname(os.path.join(replica, file)) != replica and directory_name not in replica_directories:
-    #         replica_directories.append(directory_name)
-    # for file in source_items:
-    #     directory_name = os.path.relpath(os.path.dirname(file[0]), source)
-    #     if os.path.dirname(file[0]) != source and directory_name not in source_directories:
-    #         print(directory_name)
-    #         if directory_name not in replica_directories:
-    #             os.makedirs(os.path.join(replica, directory_name))
-    #             source_directories.append(directory_name)
 
 
 
