@@ -9,8 +9,8 @@ def grab_source_info():
     source = sys.argv[1]
     source_items = []
     for (dir_path, dir_names, file_names) in os.walk(source):
-        for file in file_names:
-            source_items.append([os.path.join(dir_path, file), os.stat(os.path.join(dir_path, file)).st_mtime])
+        source_items.append([os.path.join(dir_path, file), os.stat(os.path.join(dir_path, file)).st_mtime] for file in
+                            file_names)
     return source_items, source
 
 
@@ -23,8 +23,7 @@ def sync_files(source_items, source):
     if not os.path.exists(replica):
         os.mkdir(replica)
     for (dir_path, dir_names, file_names) in os.walk(replica):
-        for file in file_names:
-            replica_items.append(os.path.relpath(os.path.join(dir_path, file), replica))
+        replica_items.append(os.path.relpath(os.path.join(dir_path, file), replica) for file in file_names)
     copy_new_files(source_items, replica_items, replica, source)
     remove_files(source_items, replica_items, replica, source)
     manage_subfolders(source_items, replica_items, replica, source)
@@ -59,9 +58,7 @@ def remove_files(source_items, replica_items, replica, source):
             logging.info(f"'{file}' removed from replica folder.")
 
 
-def manage_subfolders(source_items, replica_items, replica, source):
-    replica_directories = []
-    source_directories = []
+def manage_subfolders(replica, source):
     replica_directories = [os.path.relpath(x[0], replica) for x in os.walk(replica)]
     source_directories = [os.path.relpath(x[0], source) for x in os.walk(source)]
     for dir in source_directories:
@@ -72,7 +69,6 @@ def manage_subfolders(source_items, replica_items, replica, source):
         if dir not in source_directories:
             os.removedirs(os.path.join(replica, dir))
             logging.info(f"'{dir}' subfolder removed from replica folder.")
-
 
 
 def sync_period():
